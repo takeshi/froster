@@ -7,7 +7,7 @@ import * as _ from "lodash";
 import {Class, INewable} from "./util/class";
 
 export let ModelModule = (kernel: i.IKernel) => {
-    kernel.bind(ModelFactory).to(ModelFactory).inSingletonScope();
+    kernel.bind(ModelRegistry).to(ModelRegistry).inSingletonScope();
     kernel.bind(Model).to(Model);
 }
 
@@ -20,19 +20,26 @@ export interface SelectOption {
 }
 
 @i.injectable()
-export class ModelFactory {
+export class ModelRegistry {
+
+    cache: Map<Class<any>, Model<any>> = new Map();
 
     constructor(
         @i.inject(i.Kernel) private kernel: i.IKernel,
-        private factory: sqlBuilder.SqlBuilderFactory) {
+        private sqlBuilderFactory: sqlBuilder.SqlBuilderFactory) {
     }
 
     create<T>(clazz: INewable<T>): Model<T> {
-        return this.createFromClass(Class.of(clazz));
+        return this.getOrCreate(Class.of(clazz));
     }
 
-    createFromClass<T>(clazz: Class<T>): Model<T> {
-        return this.kernel.get(Model).init(this.factory.createFromClass(clazz));
+    getOrCreate<T>(clazz: Class<T>): Model<T> {
+        let model = this.cache.get(clazz);
+        if (!model) {
+            model = this.kernel.get(Model).init(this.sqlBuilderFactory.create(clazz));
+            this.cache.set(clazz, model);
+        }
+        return model;
     }
 
 }
@@ -42,7 +49,7 @@ export class Model<T> {
 
     private sqlBuilder: sqlBuilder.SqlBuilder;
     private meta: ModelMeta;
-
+            
     constructor(
         public connection: Connection,
         private dataMapper: objectMapper.DataMapper

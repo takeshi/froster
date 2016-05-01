@@ -41,7 +41,7 @@ export class Kernel {
     }
 
     get model() {
-        return this.kernel.get(model.ModelFactory);
+        return this.kernel.get(model.ModelRegistry);
     }
 
 }

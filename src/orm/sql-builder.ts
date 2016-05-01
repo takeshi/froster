@@ -20,7 +20,7 @@ export class SqlBuilderFactory {
         @i.inject(i.Kernel) private kernel: i.IKernel) {
     }
 
-    createFromClass<T>(clazz: Class<T>) {
+    create<T>(clazz: Class<T>) {
         return this.kernel.get(SqlBuilder).init(
             this.kernel.get(modelMeta.ModelMeta).init(clazz)
         );
@@ -35,11 +35,11 @@ export class SqlBuilder {
     meta: modelMeta.ModelMeta;
 
     constructor(
-        private selectSql: Select,
-        private dropTable: DropTable,
-        private createTable: CreateTable,
-        private insertSql: Insert,
-        private dialect: Dialect
+        public selectSql: Select,
+        public dropTable: DropTable,
+        public createTable: CreateTable,
+        public insertSql: Insert,
+        public dialect: Dialect
     ) {
     }
 
