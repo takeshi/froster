@@ -37,8 +37,9 @@ export class Class<T> {
     getArrayType(property: string): Class<any> {
         let type = Reflect.getMetadata("orm:arrayType", this.constructor.prototype, property);
         if (!type) {
-            throw new Error(this.name + "'" + this.prototype + " has no array type");
+            return null;
         }
         return Class.of(type);
     }
+
 }

@@ -1,4 +1,4 @@
-import * as froster from "../../src/froster";
+import * as froster from "..//src/froster";
 import * as _ from "lodash";
 
 @froster.Entity()
@@ -38,6 +38,9 @@ export class 株 {
 
     @froster.Column()
     銘柄名: string;
+
+    @froster.Column()
+    タイプ: string;
 
 }
 

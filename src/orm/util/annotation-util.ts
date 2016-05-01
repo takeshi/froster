@@ -14,10 +14,10 @@ export class FieldMetadataFactory<OPTION> {
     private arrayKey: string;
 
     constructor(key: string) {
-        this.key = FieldMetadataFactory + key;
+        this.key = FieldMetadataFactory.name + key;
         this.arrayKey = this.key + ":array";
         this.decorator = this.decorator.bind(this);
-        this.arrayDecorator = this.decorator.bind(this);
+        this.arrayDecorator = this.arrayDecorator.bind(this);
         this.get = this.get.bind(this);
     }
 
@@ -84,7 +84,7 @@ export class ClassMetadataFactory<OPTION>{
     private key: string;
 
     constructor(key: string) {
-        this.key = ClassMetadataFactory + key;
+        this.key = ClassMetadataFactory.name + key;
         this.decorator = this.decorator.bind(this);
         this.get = this.get.bind(this);
     }

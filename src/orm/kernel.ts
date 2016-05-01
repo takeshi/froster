@@ -8,6 +8,8 @@ import * as conn from "./connection";
 import * as sql from "./sql";
 import * as meta from "./model-meta";
 import * as logger from "./logger";
+import * as objectMapper from "./util/object-mapper";
+import * as clazz from "./util/class";
 
 export let CoreModules: i.IKernelModule = (k) => {
 
@@ -17,6 +19,7 @@ export let CoreModules: i.IKernelModule = (k) => {
     k.load(conn.ConnectionModule);
     k.load(meta.ModelMetaModule);
     k.load(logger.LoggerModule);
+    k.load(objectMapper.ObjectMapperModule);
 
     k.bind(dialect.Dialect).to(dialect.Dialect);
 
@@ -29,7 +32,9 @@ export class Kernel {
     constructor(public kernel: i.IKernel) {
     }
 
-
+    get<T>(identifer: clazz.INewable<T>): T {
+        return this.kernel.get(identifer);
+    }
 
     get connection() {
         return this.kernel.get(conn.Connection);

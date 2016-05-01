@@ -1,7 +1,7 @@
 import * as sqlBuilder from "./sql-builder";
 import {Connection} from "./connection";
 import {ModelMeta} from "./model-meta";
-import {ObjectMapper} from "./object-mapper";
+import * as objectMapper from "./util/object-mapper";
 import * as i from "inversify";
 import * as _ from "lodash";
 import {Class, INewable} from "./util/class";
@@ -27,11 +27,11 @@ export class ModelFactory {
         private factory: sqlBuilder.SqlBuilderFactory) {
     }
 
-    create<T>(clazz: INewable<any>) {
+    create<T>(clazz: INewable<T>): Model<T> {
         return this.createFromClass(Class.of(clazz));
     }
 
-    createFromClass<T>(clazz: Class<any>) {
+    createFromClass<T>(clazz: Class<T>): Model<T> {
         return this.kernel.get(Model).init(this.factory.createFromClass(clazz));
     }
 
@@ -42,16 +42,16 @@ export class Model<T> {
 
     private sqlBuilder: sqlBuilder.SqlBuilder;
     private meta: ModelMeta;
-    private mapper: ObjectMapper;
 
     constructor(
-        public connection: Connection) {
+        public connection: Connection,
+        private dataMapper: objectMapper.DataMapper
+    ) {
     }
 
     init(sqlBiulder: sqlBuilder.SqlBuilder): this {
         this.sqlBuilder = sqlBiulder;
         this.meta = this.sqlBuilder.meta;
-        this.mapper = new ObjectMapper(this.meta);
         return this;
     }
 
@@ -75,8 +75,8 @@ export class Model<T> {
         let result = await this.connection.select<T>(
             this.sqlBuilder.select()
         );
-
-        return result.map(i => this.mapper.map(i)) as T[];
+        let properties = this.sqlBuilder.meta.columns();
+        return this.dataMapper.listMapByProperties(this.sqlBuilder.meta.clazz, "id", properties, result);
     }
 
     async findById(id: string): Promise<T> {
@@ -87,7 +87,7 @@ export class Model<T> {
         if (result.length === 0) {
             return null;
         }
-        return this.mapper.map(result[0]) as T;
+        return this.dataMapper.singleMapByProperties(this.sqlBuilder.meta.clazz, this.sqlBuilder.meta.columns(), result);
     }
 
     private async lastId() {
